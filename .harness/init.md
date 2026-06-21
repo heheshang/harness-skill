@@ -9,13 +9,16 @@
 
 ```bash
 # 检查必要工具
-which java mvn git node npm npx 2>/dev/null || echo "WARN: some tools missing"
+which git 2>/dev/null || echo "WARN: git missing"
+
+# 自动检测构建工具
+source .harness/scripts/detect-build.sh
 
 # 检查项目是否可编译
-mvn compile -q 2>/dev/null && echo "✅ Compile OK" || echo "❌ Compile failed"
+${BUILD_CHECK_CMD} 2>/dev/null && echo "✅ ${BUILD_TOOL} compile OK" || echo "❌ ${BUILD_TOOL} compile failed"
 
 # 检查项目是否有测试
-mvn test -q 2>/dev/null && echo "✅ Tests OK" || echo "ℹ️  No tests yet"
+${TEST_CMD} -q 2>/dev/null && echo "✅ ${BUILD_TOOL} tests OK" || echo "ℹ️  No tests yet"
 
 # 检查 git 仓库
 git status --short 2>/dev/null && echo "✅ Git OK" || echo "⚠️  Not a git repo"
@@ -130,7 +133,7 @@ EOF
   → 本地运行通过
 
 阶段 6: CI 验证
-  → 触发 CI pipeline（非本地 mvn test——本地测试在阶段 5 已完成）
+  → 触发 CI pipeline（非本地运行测试——本地测试在阶段 5 已完成，CI 使用 detect-build.sh 自动适配）
   → 验证 CI 结果：status == SUCCESS && total_tests > 0 && passed == total
   → 记录结果到 summary.md
 ```

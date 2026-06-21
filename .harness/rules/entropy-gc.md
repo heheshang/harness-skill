@@ -35,7 +35,7 @@
 ```
 检测方式：
 - IDE 死代码检测
-- mvn dependency:analyze
+- mvn dependency:analyze（Java 项目） / pip audit（Python）/ cargo audit（Rust）
 - 搜索无调用者的 public 方法
 
 处理方式：

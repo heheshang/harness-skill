@@ -106,7 +106,7 @@ Wiki 知识库中的业务文档不会主动加载，Agent 根据任务需要自
 
 ```
 1. 执行 owner-agent.md 第零节的 8 步启动仪式（唯一权威版本）
-   → pwd → init.sh → git log → feature_list.json → summary.md → mvn compile
+   → pwd → init.sh → git log → feature_list.json → summary.md → detect-build.sh + compile
 2. 读取 AGENTS.md（项目根目录）→ 指向 .harness/
 3. 读取 .harness/platform.md → 确定平台适配
 4. 读取 .harness/README.md → 理解体系（本文件）

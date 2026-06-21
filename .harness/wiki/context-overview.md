@@ -22,7 +22,7 @@
 | 分布式缓存 | Tair / Redis | 热点数据缓存 |
 | 数据库 | MySQL (TDDL/ShardingSphere) | 数据持久化 |
 | 消息队列 | MetaQ/RocketMQ | 异步消息 |
-| 构建工具 | Maven | 项目构建 |
+| 构建工具 | Maven（示例） | 实际由 detect-build.sh 自动检测 |
 
 ## 模块职责
 

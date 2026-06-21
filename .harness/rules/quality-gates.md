@@ -40,7 +40,7 @@
 条件：
   - 项目编译无错误
   - 项目编译无警告（WARNING 级别以上为 0）
-验证方式：mvn compile / gradle build 返回值检查
+验证方式：detect-build.sh 自动检测后执行 ${BUILD_CHECK_CMD} 返回值检查
 ```
 
 ### QG-4：单元测试门禁

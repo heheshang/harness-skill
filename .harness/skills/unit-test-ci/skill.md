@@ -59,16 +59,18 @@ passed == total_tests
 
 ```yaml
 # .harness/ci/config.yml
+# 构建命令由 detect-build.sh 自动适配
 pipeline:
   stages:
     - compile:
-        script: mvn clean compile
+        script: source .harness/scripts/detect-build.sh && ${BUILD_CMD}
     - test:
-        script: mvn test
+        script: source .harness/scripts/detect-build.sh && ${TEST_CMD}
         reports:
-          - target/surefire-reports/*.xml
+          - target/surefire-reports/*.xml      # Java
+          - test-results/**/*.xml               # Python/JUnit XML
         coverage:
           threshold: 80
-    - checkstyle:
-        script: mvn checkstyle:check
+    - lint:
+        script: source .harness/scripts/detect-build.sh && ${LINT_CMD}
 ```

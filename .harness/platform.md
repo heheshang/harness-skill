@@ -20,8 +20,8 @@ else                                      → 通用模式
 | 读取文件 | `Read` 工具 | `read` 或 `cat` |
 | 写入文件 | `Write` / `Edit` 工具 | `write` / `edit` |
 | 执行命令 | `Bash` 工具 | `bash` 或 `shell` |
-| 运行测试 | `Bash: mvn test` | `bash: mvn test` |
-| 编译检查 | `Bash: mvn compile` | `bash: mvn compile` |
+| 运行测试 | `Bash: source .harness/scripts/detect-build.sh && ${TEST_CMD}` | `bash: source .harness/scripts/detect-build.sh && ${TEST_CMD}` |
+| 编译检查 | `Bash: source .harness/scripts/detect-build.sh && ${BUILD_CHECK_CMD}` | `bash: source .harness/scripts/detect-build.sh && ${BUILD_CHECK_CMD}` |
 | 文件搜索 | `Grep` / `Glob` 工具 | `grep` / `find` |
 | MCP 工具 | `skill_mcp` 工具 | 通过 STDIO MCP |
 | 截图验证 | Puppeteer MCP | Playwright MCP |
@@ -59,8 +59,7 @@ else                                      → 通用模式
 - 只在原生工具不可用时才 fallback 到 shell 命令
 
 ### 命令执行
-- Maven/Gradle 编译命令在两个平台完全一致
-- 测试运行命令完全一致
+- 构建/测试命令由 detect-build.sh 自动适配，在两个平台执行方式一致
 - git 命令完全一致
 
 ### MCP 工具

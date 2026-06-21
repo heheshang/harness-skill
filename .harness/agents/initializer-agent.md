@@ -27,16 +27,19 @@
 # 必须是幂等的——多次运行结果相同
 # 退出码 0 表示环境就绪
 
+# 自动检测构建工具
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/detect-build.sh"
+
 # 检查项目是否可编译
-mvn compile -q 2>/dev/null
+${BUILD_CHECK_CMD} 2>/dev/null
 if [ $? -ne 0 ]; then
-  echo "❌ Compile failed. Check dependencies."
+  echo "❌ ${BUILD_TOOL} compile failed. Check dependencies."
   exit 1
 fi
 
 # 启动本地服务（示例）
 # docker compose up -d
-# mvn spring-boot:run -Dspring.profiles.active=dev &
 
 echo "✅ Development environment ready"
 ```
@@ -87,8 +90,8 @@ Steps:
   1. 确认当前工作目录
   2. 检查项目是否已是 Git 仓库
   3. 读取 HAR-README 了解项目概况
-  4. 运行 mvn compile 验证项目可编译
-  5. 编写 .harness/scripts/init.sh
+   4. 运行编译检查（source .harness/scripts/detect-build.sh 后执行 ${BUILD_CHECK_CMD}）
+   5. 编写 .harness/scripts/init.sh
   6. 扫描项目结构，生成 feature_list.json
   7. 初始化 Git 仓库并做初始提交（如果尚无提交）
   8. 输出安装报告
@@ -101,7 +104,7 @@ Output:
 Quality Gate:
   - init.sh 存在且可执行
   - feature_list.json 格式有效且包含至少一个 feature
-  - 项目可编译（mvn compile 通过）
+  - 项目可编译（detect-build.sh 检测后 BUILD_CHECK_CMD 通过）
 
 Human Confirm: "Harness 初始化完成，是否开始第一个需求？"
 ```

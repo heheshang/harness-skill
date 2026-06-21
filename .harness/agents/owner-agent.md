@@ -22,7 +22,10 @@
 4. 读取 feature_list.json，确定当前最高优先级的未完成特性
 5. 如果没有 feature_list.json → 检查 .harness/changes/{current}/summary.md
 6. 读取 summary.md 恢复会话上下文（进度、阻塞项、待决策点）
-7. 运行基本编译检查（mvn compile -q）确保代码库未被破坏
+7. 运行基本编译检查确保代码库未被破坏：
+       source .harness/scripts/detect-build.sh
+       ${BUILD_CHECK_CMD}
+   （detect-build.sh 自动识别 Maven/Gradle/Pip/Npm/Cargo/Go）
 8. 开始工作
 ```
 
@@ -31,6 +34,7 @@
 | 问题 | 处理方式 |
 |------|----------|
 | init.sh 不存在 | 通知用户需要初始化：`请运行 Initializer Agent` |
+| 编译失败（detect-build.sh 返回 unknown） | 检测到未知构建工具，手动确认构建命令或配置 detect-build.sh |
 | 编译失败 | 先修复编译错误，不继续推进特性开发 |
 | 特性清单为空 | 询问用户第一个需求是什么 |
 | summary.md 不存在 | 从 git log 推断进度，创建新的 summary.md |
@@ -39,11 +43,14 @@
 
 ### 项目概况
 
-- **项目名称**：price-center（价格中心）
-- **技术栈**：Java 1.8 / Spring Boot / LiteFlow / HSF / Diamond / Tair / TDDL
-- **代码规模**：10 万+ 行
-- **模块结构**：app(接入层) / web(展现层) / core(核心业务层) / integration(集成层) / common(公共层)
-- **核心中间件**：RPC 框架 (HSF)、流程编排引擎 (LiteFlow)、配置中心 (Diamond)、分布式缓存 (Tair/Redis)、数据库中间件 (TDDL/ShardingSphere)
+> ⚠️ **示例数据**：以下项目信息（price-center / Java 1.8）是示例占位数据。
+> 实际项目应替换为真实项目概况。构建工具由 `detect-build.sh` 自动检测。
+
+- **项目名称**：price-center（价格中心） — *示例*
+- **技术栈**：Java 1.8 / Spring Boot / LiteFlow / HSF / Diamond / Tair / TDDL — *示例*
+- **代码规模**：10 万+ 行 — *示例*
+- **模块结构**：app(接入层) / web(展现层) / core(核心业务层) / integration(集成层) / common(公共层) — *示例*
+- **核心中间件**：RPC 框架 (HSF)、流程编排引擎 (LiteFlow)、配置中心 (Diamond)、分布式缓存 (Tair/Redis)、数据库中间件 (TDDL/ShardingSphere) — *示例*
 
 ### 核心业务约束
 
