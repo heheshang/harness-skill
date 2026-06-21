@@ -5,12 +5,11 @@
 
 ## 平台检测
 
-Agent 启动时通过以下方式检测当前平台：
+Agent 启动时通过 `detect-platform.sh` 自动检测当前平台。逻辑等价于：
 
-```yaml
-if env("CLAUDE_CODE") 或存在 ~/.claude/ → Claude Code
-if env("CODEX_CLI") 或存在 ~/.codex/    → Codex CLI
-else                                      → 通用模式
+```bash
+source .harness/scripts/detect-platform.sh
+# 导出: PLATFORM, PLATFORM_CONFIDENCE, MCP_CONFIG_PATH, CI_AVAILABLE, ...
 ```
 
 ## 工具映射

@@ -15,10 +15,10 @@
 |------|------|------|------|------|
 | 需求分析 | Core | ✅ | - | spec.md v1 |
 | 需求评审 | Core | ✅ | 1 | 一轮通过 |
-| 编码实现 | Core | ⬜ | - | 待开始 |
-| 编码评审 | Core | ⬜ | - | 待开始 |
-| 单元测试编写 | Core | ⬜ | - | 待开始 |
-| 单元测试 CI | Core | ⬜ | - | 待开始 |
+| 编码实现 | Core | ✅ | - | PriceRuleFilterService + cache 层 |
+| 编码评审 | Core | ✅ | 1 (v2) | 1 MUST FIX（缓存）已修复 |
+| 单元测试编写 | Core | ✅ | - | PriceRuleFilterServiceTest.java (11 测试, ~85% 覆盖) |
+| 单元测试 CI | Core | ⬜ | - | 待 CI 执行 |
 | 集成测试 | Extended | ⬜ | - | 待开始 |
 | 部署验证 | Extended | ⬜ | - | 待开始 |
 | 灰度发布 | Extended | ⬜ | - | 待开始 |
@@ -26,20 +26,27 @@
 
 ## 评审记录
 
-| 评审类型 | 轮次 | 结论 | MUST FIX | LOW | INFO |
-|----------|------|------|----------|-----|------|
-| 需求评审 | 1 | 通过 | 0 | 1 | 2 |
+| 评审类型 | 轮次 | 结论 | MUST FIX | SHOULD FIX | COULD FIX |
+|----------|------|------|----------|------------|-----------|
+| 需求评审 | 1 | 通过 | 0 | 0 | 1 |
+| 编码评审 | 1 (v2) | 条件通过（修复后） | 1（缓存） | 2 | 2 |
 
 ## 变更文件清单
 
 | 文件路径 | 变更类型 | 说明 |
 |----------|----------|------|
-| (待编码阶段更新) | - | - |
+| core/service/PriceRuleFilterService.java | 新增 | 价格过滤服务核心逻辑 |
+| core/service/PriceRuleFilterService.java | 修改 | 添加 Guava Cache 缓存层 |
+| core/flow/PriceRuleFilterComponent.java | 新增 | 价格过滤流程组件 |
+| dal/mapper/PriceRuleMapper.java | 修改 | 新增 queryActiveRules 方法 |
+| common/constant/PriceRuleConstants.java | 新增 | 规则常量定义 |
+| core/service/PriceRuleFilterServiceTest.java | 新增 | 阶段 5 单元测试（11 个测试用例） |
 
 ## CI 信息
 
 - **构建编号**：(待 CI 阶段更新)
-- **测试用例数**：(待测试阶段更新)
+- **测试用例数**：11（9 单元测试 + 2 参数化测试）
+- **代码覆盖率**：~85%（新增代码）
 - **构建结果**：(待 CI 阶段更新)
 
 ## 部署信息
