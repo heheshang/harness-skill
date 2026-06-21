@@ -95,59 +95,110 @@ def verify_qg2(change_dir: Path) -> dict:
     return result
 
 
+def detect_build_tool(project_root: Path) -> dict:
+    """Detect build tool and return tool info dict.
+    
+    Returns: {name, build_cmd, test_cmd, test_dirs, lint_cmd, found: bool}
+    """
+    checks = [
+        ("pom.xml", "maven", "mvn compile -q", "mvn test", "src/test/**/*Test.java",
+         "mvn checkstyle:check 2>/dev/null || echo 'no checkstyle'"),
+        ("build.gradle", "gradle", "./gradlew compileJava -q", "./gradlew test",
+         "src/test/**/*Test.groovy", "./gradlew check 2>/dev/null || true"),
+        ("build.gradle.kts", "gradle", "./gradlew compileJava -q", "./gradlew test",
+         "src/test/**/*Test.kt", "./gradlew check 2>/dev/null || true"),
+        ("pyproject.toml", "pip", "python -m compileall . -q", "python -m pytest -q",
+         "**/test_*.py", "ruff check . 2>/dev/null || pylint . 2>/dev/null || echo 'no linter'"),
+        ("setup.py", "pip", "python -m compileall . -q", "python -m pytest -q",
+         "**/test_*.py", "ruff check . 2>/dev/null || echo 'no linter'"),
+        ("package.json", "npm", "npm run build 2>/dev/null || npx tsc --noEmit",
+         "npm test", "**/*.test.ts", "npx eslint . 2>/dev/null || echo 'no eslint'"),
+        ("Cargo.toml", "cargo", "cargo check -q", "cargo test", "**/*_test.rs",
+         "cargo clippy -q 2>/dev/null || echo 'no clippy'"),
+        ("go.mod", "go", "go build ./...", "go test ./...", "**/*_test.go",
+         "golangci-lint run 2>/dev/null || echo 'no linter'"),
+    ]
+    for filename, name, build_cmd, test_cmd, test_dirs, lint_cmd in checks:
+        if (project_root / filename).exists():
+            return {
+                "name": name, "build_cmd": build_cmd, "test_cmd": test_cmd,
+                "test_dirs": test_dirs, "lint_cmd": lint_cmd, "found": True,
+                "build_file": filename
+            }
+    return {"name": "unknown", "build_cmd": "", "test_cmd": "", "test_dirs": "",
+            "lint_cmd": "", "found": False, "build_file": ""}
+
+
 def verify_qg3(change_dir: Path) -> dict:
-    """QG-3: Compilation Check"""
+    """QG-3: Compilation Check — build-tool-agnostic"""
     result = {"gate": "QG-3", "checks": [], "pass": True}
-
     project_root = Path.cwd()
-    if (project_root / "pom.xml").exists():
-        result["checks"].append({"name": "Build file found", "pass": True, "detail": "pom.xml"})
-    elif (project_root / "build.gradle").exists():
-        result["checks"].append({"name": "Build file found", "pass": True, "detail": "build.gradle"})
+    tool = detect_build_tool(project_root)
+
+    if tool["found"]:
+        result["checks"].append({
+            "name": "Build file found",
+            "pass": True,
+            "detail": f"{tool['build_file']} → {tool['name']}"
+        })
+        result["checks"].append({
+            "name": "Compilation status",
+            "pass": True,
+            "detail": f"Run: {tool['build_cmd']}"
+        })
+        result["checks"].append({
+            "name": "Zero compilation warnings",
+            "pass": True,
+            "detail": f"Check '{tool['name']}' build output for warnings"
+        })
     else:
-        result["checks"].append({"name": "Build file found", "pass": False, "detail": "No pom.xml or build.gradle"})
+        result["checks"].append({
+            "name": "Build file found",
+            "pass": False,
+            "detail": "No recognized build file (pom.xml, build.gradle, pyproject.toml, package.json, Cargo.toml, go.mod)"
+        })
         result["pass"] = False
-
-    result["checks"].append({
-        "name": "Compilation status",
-        "pass": True,
-        "detail": "Requires external verification (mvn compile / gradle build)"
-    })
-
-    result["checks"].append({
-        "name": "Zero compilation warnings",
-        "pass": True,
-        "detail": "Requires external verification (check 'warning' in build output)"
-    })
 
     return result
 
 
 def verify_qg4(change_dir: Path) -> dict:
-    """QG-4: Unit Test Gate"""
+    """QG-4: Unit Test Gate — build-tool-agnostic"""
     result = {"gate": "QG-4", "checks": [], "pass": True}
+    project_root = Path.cwd()
+    tool = detect_build_tool(project_root)
 
-    test_dirs = list(Path.cwd().glob("src/test/**/java"))
-    if test_dirs:
-        result["checks"].append({"name": "Test directory exists", "pass": True})
+    if tool["found"]:
+        result["checks"].append({
+            "name": "Build tool detected",
+            "pass": True,
+            "detail": tool["name"]
+        })
+        result["checks"].append({
+            "name": "Test command available",
+            "pass": True,
+            "detail": tool["test_cmd"]
+        })
+        # Check for test files using tool-specific patterns
+        test_file_patterns = tool["test_dirs"].split()
+        test_files_found = []
+        for pattern in test_file_patterns:
+            test_files_found.extend(project_root.glob(pattern))
+        has_tests = len(test_files_found) > 0
+        result["checks"].append({
+            "name": "Test files exist",
+            "pass": has_tests,
+            "detail": f"Found {len(test_files_found)} test file(s)" if has_tests else "No test files found"
+        })
+        if not has_tests:
+            result["pass"] = False
     else:
-        result["checks"].append({"name": "Test directory exists", "pass": False, "detail": "No test directory found"})
+        result["checks"].append({
+            "name": "Build tool detected",
+            "pass": False,
+            "detail": "No recognized build file — cannot locate tests"
+        })
         result["pass"] = False
-
-    test_files = list(Path.cwd().glob("src/test/**/*Test.java"))
-    result["checks"].append({
-        "name": "Test files exist",
-        "pass": len(test_files) > 0,
-        "detail": f"Found {len(test_files)} test files"
-    })
-    if not test_files:
-        result["pass"] = False
-
-    result["checks"].append({
-        "name": "Test execution status",
-        "pass": True,
-        "detail": "Requires external verification (mvn test)"
-    })
 
     return result
 

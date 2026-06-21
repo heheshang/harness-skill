@@ -11,13 +11,16 @@ set -e
 
 echo "🔧 Harness Session Init — $(date '+%Y-%m-%d %H:%M:%S')"
 
-# 1. 检查项目是否可编译
-if [ -f "pom.xml" ]; then
-  mvn compile -q 2>/dev/null && echo "  ✅ Maven compile OK" || echo "  ❌ Maven compile failed"
-elif [ -f "build.gradle" ]; then
-  ./gradlew compileJava -q 2>/dev/null && echo "  ✅ Gradle compile OK" || echo "  ❌ Gradle compile failed"
+# 1. 自动检测构建工具并运行编译检查
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/detect-build.sh"
+
+# 1a. 运行编译检查
+echo "  📦 Running: ${BUILD_CHECK_CMD}"
+if ${BUILD_CHECK_CMD} 2>/dev/null; then
+  echo "  ✅ ${BUILD_TOOL} compile OK"
 else
-  echo "  ⚠️  No build file found (pom.xml or build.gradle)"
+  echo "  ❌ ${BUILD_TOOL} compile failed"
 fi
 
 # 2. 检查变更目录

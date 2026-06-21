@@ -5,6 +5,10 @@
 
 set -e
 
+# Source build detection
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+source "${SCRIPT_DIR}/detect-build.sh"
+
 GATE=$1
 CHANGE_DIR=$2
 RESULT_FILE="${CHANGE_DIR}/qg-result.md"
@@ -95,75 +99,78 @@ case $GATE in
     ;;
 
    3)
-     echo "## QG-3: Compilation Check" >> "$RESULT_FILE"
-     echo "" >> "$RESULT_FILE"
+      echo "## QG-3: Compilation Check" >> "$RESULT_FILE"
+      echo "" >> "$RESULT_FILE"
 
-     if [ -f "pom.xml" ]; then
-       # 检查编译是否成功
-       COMPILE_OUTPUT=$(mvn compile 2>&1) || true
-       COMPILE_EXIT=$?
-       if [ $COMPILE_EXIT -eq 0 ]; then
-         echo "- [x] Maven compile: SUCCESS" >> "$RESULT_FILE"
-       else
-         echo "- [ ] FAIL: Maven compile failed (exit code: $COMPILE_EXIT)" >> "$RESULT_FILE"
-         PASS=false
-       fi
+      if [ "$BUILD_TOOL" != "unknown" ]; then
+        COMPILE_OUTPUT=$(${BUILD_CHECK_CMD} 2>&1) || true
+        COMPILE_EXIT=$?
+        if [ $COMPILE_EXIT -eq 0 ]; then
+          echo "- [x] ${BUILD_TOOL} compile: SUCCESS" >> "$RESULT_FILE"
+        else
+          echo "- [ ] FAIL: ${BUILD_TOOL} compile failed (exit code: $COMPILE_EXIT)" >> "$RESULT_FILE"
+          PASS=false
+        fi
 
-       # 检查编译警告（quality-gates.md 要求零警告）
-       WARN_COUNT=$(echo "$COMPILE_OUTPUT" | grep -c -i "warning" 2>/dev/null || echo 0)
-       if [ "$WARN_COUNT" -gt 0 ]; then
-         echo "- [ ] WARN: Found ${WARN_COUNT} compilation warnings" >> "$RESULT_FILE"
-         # 警告不导致 FAIL，但记录
-         echo "  (QG requirement: zero warnings)" >> "$RESULT_FILE"
-       else
-         echo "- [x] No compilation warnings" >> "$RESULT_FILE"
-       fi
+        WARN_COUNT=$(echo "$COMPILE_OUTPUT" | grep -c -i "warning" 2>/dev/null || echo 0)
+        if [ "$WARN_COUNT" -gt 0 ]; then
+          echo "- [ ] WARN: Found ${WARN_COUNT} compilation warnings" >> "$RESULT_FILE"
+          echo "  (QG requirement: zero warnings)" >> "$RESULT_FILE"
+        else
+          echo "- [x] No compilation warnings" >> "$RESULT_FILE"
+        fi
+      else
+        echo "- [ ] WARN: No build tool detected" >> "$RESULT_FILE"
+      fi
+      ;;
 
-     elif [ -f "build.gradle" ]; then
-       COMPILE_OUTPUT=$(./gradlew compileJava 2>&1) || true
-       COMPILE_EXIT=$?
-       if [ $COMPILE_EXIT -eq 0 ]; then
-         echo "- [x] Gradle compile: SUCCESS" >> "$RESULT_FILE"
-       else
-         echo "- [ ] FAIL: Gradle compile failed (exit code: $COMPILE_EXIT)" >> "$RESULT_FILE"
-         PASS=false
-       fi
-
-       WARN_COUNT=$(echo "$COMPILE_OUTPUT" | grep -c -i "warning" 2>/dev/null || echo 0)
-       if [ "$WARN_COUNT" -gt 0 ]; then
-         echo "- [ ] WARN: Found ${WARN_COUNT} compilation warnings" >> "$RESULT_FILE"
-       else
-         echo "- [x] No compilation warnings" >> "$RESULT_FILE"
-       fi
-
-     else
-       echo "- [ ] WARN: No build file found (pom.xml or build.gradle)" >> "$RESULT_FILE"
-     fi
-     ;;
-
-  4)
+   4)
     echo "## QG-4: Unit Test Gate" >> "$RESULT_FILE"
     echo "" >> "$RESULT_FILE"
 
-    if [ -f "pom.xml" ]; then
-      TEST_OUTPUT=$(mvn test 2>&1) || true
-      TOTAL=$(echo "$TEST_OUTPUT" | grep -oP 'Tests run: \K[0-9]+' | head -1 || echo 0)
-      PASSED=$(echo "$TEST_OUTPUT" | grep -oP 'Failures: \K[0-9]+' | head -1 || echo 0)
-      FAILURES=$((TOTAL - PASSED))
+    if [ "$BUILD_TOOL" != "unknown" ]; then
+      echo "- Running: ${TEST_CMD}" >> "$RESULT_FILE"
+      TEST_OUTPUT=$(${TEST_CMD} 2>&1) || true
+      TEST_EXIT=$?
 
-      echo "- Tests run: ${TOTAL}" >> "$RESULT_FILE"
-      echo "- Passed: ${PASSED}" >> "$RESULT_FILE"
-      echo "- Failed: ${FAILURES}" >> "$RESULT_FILE"
-
-      if [ "$TOTAL" -eq 0 ]; then
-        echo "- [ ] FAIL: No tests found (total_tests == 0)" >> "$RESULT_FILE"
-        PASS=false
-      elif [ "$FAILURES" -gt 0 ]; then
-        echo "- [ ] FAIL: ${FAILURES} tests failed" >> "$RESULT_FILE"
-        PASS=false
+      # Try to parse test results (format varies by tool)
+      if echo "$TEST_OUTPUT" | grep -q -E "Tests run:|tests passed|FAILED|ok|PASS"; then
+        TOTAL=$(echo "$TEST_OUTPUT" | grep -oP 'Tests run: \K[0-9]+' | head -1 || echo "")
+        if [ -z "$TOTAL" ]; then
+          # grep exit code-based result summary
+          if [ $TEST_EXIT -eq 0 ]; then
+            echo "- [x] All tests passed (exit code: 0)" >> "$RESULT_FILE"
+          else
+            echo "- [ ] FAIL: Tests failed (exit code: $TEST_EXIT)" >> "$RESULT_FILE"
+            PASS=false
+          fi
+        else
+          PASSED=$(echo "$TEST_OUTPUT" | grep -oP 'Failures: \K[0-9]+' | head -1 || echo 0)
+          FAILURES=$((TOTAL - PASSED))
+          echo "- Tests run: ${TOTAL}" >> "$RESULT_FILE"
+          echo "- Passed: ${PASSED}" >> "$RESULT_FILE"
+          echo "- Failed: ${FAILURES}" >> "$RESULT_FILE"
+          if [ "$TOTAL" -eq 0 ]; then
+            echo "- [ ] FAIL: No tests found (total_tests == 0)" >> "$RESULT_FILE"
+            PASS=false
+          elif [ "$FAILURES" -gt 0 ]; then
+            echo "- [ ] FAIL: ${FAILURES} tests failed" >> "$RESULT_FILE"
+            PASS=false
+          else
+            echo "- [x] All ${TOTAL} tests passed" >> "$RESULT_FILE"
+          fi
+        fi
       else
-        echo "- [x] All ${TOTAL} tests passed" >> "$RESULT_FILE"
+        echo "- [ ] WARN: Could not parse test output" >> "$RESULT_FILE"
+        if [ $TEST_EXIT -eq 0 ]; then
+          echo "  (exit code 0, assuming pass)" >> "$RESULT_FILE"
+        else
+          echo "- [ ] FAIL: Tests failed (exit code: $TEST_EXIT)" >> "$RESULT_FILE"
+          PASS=false
+        fi
       fi
+    else
+      echo "- [ ] WARN: No build tool detected — cannot run tests" >> "$RESULT_FILE"
     fi
     ;;
 
