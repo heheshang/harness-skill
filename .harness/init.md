@@ -53,6 +53,10 @@ required_files=(
   ".harness/changes/template/summary.md"
   ".harness/changes/template/feature_list.json"
   ".harness/changes/template/contract.md"
+  ".harness/changes/template/design.md"     # 新增：技术设计模板
+  ".harness/changes/template/review.md"     # 新增：评审报告模板
+  ".harness/changes/template/test-plan.md"  # 新增：测试计划模板
+  ".harness/changes/template/deploy-log.md" # 新增：部署验证模板
   ".harness/scripts/init.sh"                # 新增：会话启动脚本
   ".harness/scripts/verify-qg.sh"
 )

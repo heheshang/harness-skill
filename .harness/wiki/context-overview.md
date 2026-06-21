@@ -1,79 +1,98 @@
 # 项目上下文总览
 
 > 项目整体介绍、技术选型、模块职责。Agent 理解项目的第一站。
->
-> ⚠️ **示例数据**：此 Wiki 中的项目信息（price-center）是示例占位数据。
-> 实际项目中应替换为真实项目的内容。框架结构和格式保持不变即可。
 
 ## 项目简介
 
-**项目名称**：price-center（价格中心）
-**项目定位**：统一的价格管理与计算服务，为全平台提供标准化的价格数据支撑
+**项目名称**：harness-skill（编码流程编排框架）
+**项目定位**：为 AI Coding Agent 提供结构化开发流程的元框架。通过 6 阶段流程（需求→评审→编码→评审→测试→交付）和质量门禁体系，确保 AI 编码可重复、可审计、可验证。
 
-## 技术栈
+## 核心理念
 
-| 类别 | 技术 | 用途 |
-|------|------|------|
-| 语言 | Java 1.8 | 主开发语言 |
-| 框架 | Spring Boot 2.x | 应用框架 |
-| RPC | HSF (Alibaba HSF) | 服务间 RPC 调用 |
-| 流程编排 | LiteFlow | 复杂业务流程编排 |
-| 配置中心 | Diamond | 动态配置管理 |
-| 分布式缓存 | Tair / Redis | 热点数据缓存 |
-| 数据库 | MySQL (TDDL/ShardingSphere) | 数据持久化 |
-| 消息队列 | MetaQ/RocketMQ | 异步消息 |
-| 构建工具 | Maven（示例） | 实际由 detect-build.sh 自动检测 |
+```
+"框架不是约束，是 Agent 的脚手架"
+```
+
+- **结构化流程**：每个变更走完 6 阶段，不跳步
+- **质量门禁**：每个阶段有可执行检查，而非口头规则
+- **文档驱动**：spec → design → review → test 层层递进
+- **Agent 原生**：所有模板和流程专为 AI Agent 阅读理解设计
+- **平台无关**：支持 OpenCode / Claude Code / Codex CLI / Cursor 四种平台
+
+## 系统架构
+
+```
+Agent (OC/Claude/Codex)
+    │
+    ├── .harness/README.md        ← 体系总览
+    ├── .harness/platform.md      ← 平台适配层（工具映射 + MCP 配置）
+    ├── .harness/init.md          ← 首次初始化
+    ├── .harness/agents/
+    │   ├── owner-agent.md        ← 编排逻辑（6 阶段流程）
+    │   ├── evaluator-agent.md    ← 评审逻辑（各阶段验收）
+    │   └── initializer-agent.md  ← 初始化流程
+    ├── .harness/scripts/
+    │   ├── init.sh               ← 会话启动（平台检测 + 构建检测）
+    │   ├── detect-build.sh       ← 构建工具自动检测
+    │   ├── detect-platform.sh    ← Agent 平台自动检测
+    │   ├── verify-qg.sh          ← 质量门禁（bash）
+    │   ├── verify-qg.py          ← 质量门禁（Python）
+    │   └── gc-scan.sh            ← 熵清理扫描仪
+    ├── .harness/wiki/            ← 业务知识库（本文档）
+    ├── .harness/changes/template/ ← 变更模板集
+    ├── .harness/rules/           ← 架构/编码/自定义规则
+    ├── .harness/mcp/             ← MCP 配置中心
+    └── .github/workflows/        ← CI 集成
+```
+
+## 6 阶段流程
+
+| 阶段 | 名称 | 输入 | 输出 | 质量门禁 |
+|------|------|------|------|----------|
+| 1 | 需求分析 | 用户需求 | spec.md | 评审通过 |
+| 2 | 需求评审 | spec.md | 批准的 spec | Evaluator 批准 |
+| 3 | 编码 | 批准的 spec | 代码 + test | 编译通过 |
+| 4 | 评审 | 代码 | 批准的代码 | Reviewer 批准 |
+| 5 | 测试 | 代码 | 测试报告 | QG-1~8 全部通过 |
+| 6 | 交付 | 测试报告 | 关闭的变更 | Summary 归档 |
 
 ## 模块职责
 
 | 模块 | 路径 | 职责 |
 |------|------|------|
-| app | `app/` | 接入层，对外提供 REST/RPC 接口 |
-| web | `web/` | 展现层，管理后台 |
-| core | `core/` | 核心业务逻辑 |
-| integration | `integration/` | 外部系统集成 |
-| common | `common/` | 公共工具和常量 |
-| dal | `dal/` | 数据访问层 |
-| bootstrap | `bootstrap/` | 应用启动和配置 |
+| 流程编排 | `.harness/agents/owner-agent.md` | 6 阶段主流程编排，Owner Agent 执行规范 |
+| 评审逻辑 | `.harness/agents/evaluator-agent.md` | 各阶段评审标准和验收条件 |
+| 初始化 | `.harness/agents/initializer-agent.md` | 首次环境初始化指引 |
+| 质量门禁 | `.harness/scripts/verify-qg.sh` | QG-1~8 自动化质量检查 |
+| 构建检测 | `.harness/scripts/detect-build.sh` | 自动识别 maven/gradle/pip/npm/cargo/go |
+| 平台检测 | `.harness/scripts/detect-platform.sh` | 自动识别 OpenCode/Claude/Codex/Cursor/CI |
+| 熵清理 | `.harness/scripts/gc-scan.sh` | 注释漂移/死代码/过期引用检测 |
+| 变更模板 | `.harness/changes/template/` | 10 个模板覆盖完整变更生命周期 |
+| CI 集成 | `.github/workflows/harness-ci.yml` | GitHub Actions 质量门禁自动化 |
 
-## 关键业务流程
+## 支持的 Agent 平台
 
-### 1. 价格查询链路
-```
-用户请求 → Controller (参数校验)
-         → Service (查询逻辑)
-         → Cache (Tair 缓存查询，缓存命中直接返回)
-         → DAO (DB 查询，缓存未命中时)
-         → Service (结果组装)
-         → Cache (写入缓存)
-         → Controller (统一格式返回)
-```
-
-### 2. 价格计算链路
-```
-外部事件 → MQ 消息
-         → LiteFlow 流程引擎 (多步骤编排)
-         → Service (各步骤业务逻辑)
-         → DAO (结果持久化)
-         → Cache (缓存更新)
-         → MQ (结果通知)
-```
+| 平台 | 状态 | 核心差异 |
+|------|------|----------|
+| OpenCode | ✅ 完全支持 | 原生 `task()` 委托，`skill` 命令 |
+| Claude Code | ✅ 完全支持 | bash 为主，MCP 通过 claude.json |
+| Codex CLI | ✅ 完全支持 | shell + 文件系统操作 |
+| Cursor | ⚠️ 部分支持 | 部分 MCP 需手动配置 |
 
 ## 配置项分类
 
 | 配置类型 | 存储位置 | 变更频率 | 影响范围 |
 |----------|----------|----------|----------|
-| 业务规则配置 | Diamond | 低 | 核心逻辑 |
-| 开关配置 | Diamond | 中 | 功能灰度 |
-| 限流配置 | Diamond | 高 | 流量控制 |
-| 阈值配置 | Diamond | 低 | 业务规则 |
-| 数据库配置 | bootstrap.yml | 极低 | 基础设施 |
+| Agent 流程 | `.harness/agents/*.md` | 低 | 开发流程 |
+| 质量门禁 | `.harness/scripts/verify-qg.*` | 低 | 质量检查 |
+| 平台适配 | `.harness/platform.md` | 极低 | 平台兼容 |
+| CI 配置 | `.github/workflows/` | 低 | 自动集成 |
+| LSP | `.harness/mcp/`, `.opencode/` | 极低 | 代码编辑 |
 
 ## 环境信息
 
-| 环境 | 用途 | 数据库 | 备注 |
-|------|------|--------|------|
-| dev | 开发自测 | 开发库 | 随意操作 |
-| test | 功能测试 | 测试库 | 集成测试 |
-| staging | 预发环境 | 预发库 | 模拟线上 |
-| prod | 生产环境 | 生产库 | 严格权限管控 |
+| 环境 | 用途 | 备注 |
+|------|------|------|
+| local | 本地开发 | Agent 在用户机器运行 |
+| CI | GitHub Actions | 自动运行质量门禁和 Lint |
+| staging | 预发布（如有） | 按需配置 |
