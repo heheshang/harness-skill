@@ -101,7 +101,7 @@ detect_build_tool() {
   export TEST_CMD="echo 'no test tool detected'"
   export TEST_DIRS=""
   export LINT_CMD="echo 'no linter detected'"
-  return 1
+  return 0     # ← 始终返回 0；结果通过 BUILD_TOOL 变量传递
 }
 
 # Auto-detect on source
