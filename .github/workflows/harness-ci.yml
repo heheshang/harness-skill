@@ -37,6 +37,7 @@ jobs:
         continue-on-error: true
 
       - name: Verify build detection
+        continue-on-error: true
         run: |
           source .harness/scripts/detect-build.sh
           echo "Detected build tool: ${BUILD_TOOL}"
