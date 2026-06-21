@@ -39,6 +39,24 @@
     }
   }
 }
+
+**OpenCode（Playwright MCP）：**
+OpenCode 支持两种 MCP 配置方式：
+- 全局：`~/.config/opencode/opencode.json` 的 `mcpServers` 字段
+- 项目级：`opencode.jsonc` 的 `mcpServers` 字段
+- 自动发现：通过 STDIO 或 HTTP 协议自动连接已运行的 MCP 服务器
+
+MCP 调用统一使用 `skill_mcp` 工具。
+
+```json
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx",
+      "args": ["-y", "@playwright/mcp"]
+    }
+  }
+}
 ```
 
 **用途 — 文章明确要求：**

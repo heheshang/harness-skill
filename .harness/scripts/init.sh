@@ -11,8 +11,12 @@ set -e
 
 echo "🔧 Harness Session Init — $(date '+%Y-%m-%d %H:%M:%S')"
 
-# 1. 自动检测构建工具并运行编译检查
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# 0. 自动检测运行平台
+source "${SCRIPT_DIR}/detect-platform.sh"
+
+# 1. 自动检测构建工具并运行编译检查
 source "${SCRIPT_DIR}/detect-build.sh"
 
 # 1a. 运行编译检查

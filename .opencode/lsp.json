@@ -1,0 +1,57 @@
+{
+  "$schema": "https://opencode.ai/lsp.json",
+  "servers": {
+    "basedpyright": {
+      "enabled": true,
+      "languages": ["python"],
+      "initializationOptions": {
+        "settings": {
+          "basedpyright": {
+            "analysis": {
+              "typeCheckingMode": "standard",
+              "autoSearchPaths": true,
+              "useLibraryCodeForTypes": true,
+              "diagnosticMode": "workspace",
+              "stubPath": "",
+              "extraPaths": [".harness/scripts"]
+            }
+          }
+        }
+      }
+    },
+    "ruff": {
+      "enabled": true,
+      "languages": ["python"],
+      "initializationOptions": {
+        "settings": {
+          "lint": {
+            "select": ["E", "F", "I", "N", "W", "UP"]
+          },
+          "format": {
+            "lineLength": 120
+          }
+        }
+      }
+    },
+    "bash-language-server": {
+      "enabled": true,
+      "languages": ["shellscript"]
+    },
+    "yaml-language-server": {
+      "enabled": true,
+      "languages": ["yaml"]
+    },
+    "spectral": {
+      "enabled": false,
+      "languages": ["yaml"]
+    },
+    "markdown-language-server": {
+      "enabled": true,
+      "languages": ["markdown"]
+    },
+    "json-language-server": {
+      "enabled": true,
+      "languages": ["json", "jsonc"]
+    }
+  }
+}

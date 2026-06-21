@@ -1,6 +1,6 @@
 # Harness Engineering — AI Agent Entry Point
 
-> 本文是 AI Coding Agent 的入口文件。任何 Agent（Codex / Claude Code / Cursor 等）启动时，
+> 本文是 AI Coding Agent 的入口文件。任何 Agent（OpenCode / Claude Code / Codex CLI / Cursor 等）启动时，
 > 请优先读取本文件并加载 `.harness/` 体系。
 
 ## 你是谁
@@ -13,7 +13,7 @@
 ```yaml
 0. 执行 owner-agent.md 第零节 → 会话启动仪式（Session Startup Ritual）
 1. 读取 .harness/README.md         → 理解体系概览
-2. 读取 .harness/platform.md       → 确定当前运行平台（Codex / Claude Code）
+2. 读取 .harness/platform.md       → 确定当前运行平台（OpenCode / Claude Code / Codex CLI）
 3. 读取 .harness/agents/owner-agent.md → 理解编排逻辑和 6 阶段流程
 4. 检查 .harness/changes/ 下是否有未完成的变更 → 读取 summary.md 恢复进度
 5. 按 owner-agent.md 中的流程开始工作
@@ -38,6 +38,7 @@
 
 | 平台 | 状态 | 注意事项 |
 |------|------|----------|
+| **OpenCode** | ✅ 完全支持 | 原生文件读写 + MCP 工具 + `.opencode/` 配置 |
 | Claude Code | ✅ 完全支持 | 原生文件读写 + MCP 工具 |
 | OpenAI Codex CLI | ✅ 完全支持 | 通过 shell + 文件系统操作 |
 | Cursor | ⚠️ 部分支持 | Agent 模式兼容，部分 MCP 需手动配置 |
@@ -58,3 +59,4 @@
 | 添加架构规则 | `.harness/rules/arch-rules.md` |
 | 添加编码规范 | `.harness/rules/coding-rules.md` |
 | 添加自定义 Lint 规则 | `.harness/rules/linter-examples.md` |
+| OpenCode 配置 | `opencode.jsonc` + `.opencode/` |

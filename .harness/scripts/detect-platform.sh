@@ -62,7 +62,21 @@ detect_platform() {
     fi
   fi
 
-  # 3. Environment variable detection (used by CI or containers)
+  # 3. OpenCode detection
+  # Check global opencode config first, then project-level .opencode/ directory
+  if [ -z "${PLATFORM}" ]; then
+    if [ -f "${HOME}/.config/opencode/opencode.json" ]; then
+      export PLATFORM="opencode"
+      export PLATFORM_CONFIDENCE="high"
+      export MCP_CONFIG_PATH="${HOME}/.config/opencode/opencode.json"
+    elif [ -f ".opencode/lsp.json" ] || [ -f "opencode.jsonc" ] || [ -f "opencode.json" ]; then
+      export PLATFORM="opencode"
+      export PLATFORM_CONFIDENCE="medium"
+      export MCP_CONFIG_PATH=".opencode/"
+    fi
+  fi
+
+  # 4. Environment variable detection (used by CI or containers)
   if [ -z "${PLATFORM}" ]; then
     if [ "${CLAUDE_CODE}" = "1" ] || [ "${CLAUDE_CODE}" = "true" ]; then
       export PLATFORM="claude"
@@ -111,6 +125,11 @@ detect_platform() {
       export FILE_READ_TOOL="read"
       export FILE_WRITE_TOOL="write / edit"
       export SHELL_TOOL="bash / shell"
+      ;;
+    opencode)
+      export FILE_READ_TOOL="Read"
+      export FILE_WRITE_TOOL="Write / Edit"
+      export SHELL_TOOL="Bash / interactive_bash"
       ;;
     cursor)
       export FILE_READ_TOOL="Read"
