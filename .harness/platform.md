@@ -1,0 +1,97 @@
+# 平台适配层
+
+> **关键文件**：确定当前运行平台，将 Harness 指令映射为平台具体操作。
+> 任何阶段开始前必须读取本文件。
+
+## 平台检测
+
+Agent 启动时通过以下方式检测当前平台：
+
+```yaml
+if env("CLAUDE_CODE") 或存在 ~/.claude/ → Claude Code
+if env("CODEX_CLI") 或存在 ~/.codex/    → Codex CLI
+else                                      → 通用模式
+```
+
+## 工具映射
+
+| Harness 操作 | Claude Code | OpenAI Codex CLI |
+|-------------|-------------|------------------|
+| 读取文件 | `Read` 工具 | `read` 或 `cat` |
+| 写入文件 | `Write` / `Edit` 工具 | `write` / `edit` |
+| 执行命令 | `Bash` 工具 | `bash` 或 `shell` |
+| 运行测试 | `Bash: mvn test` | `bash: mvn test` |
+| 编译检查 | `Bash: mvn compile` | `bash: mvn compile` |
+| 文件搜索 | `Grep` / `Glob` 工具 | `grep` / `find` |
+| MCP 工具 | `skill_mcp` 工具 | 通过 STDIO MCP |
+| 截图验证 | Puppeteer MCP | Playwright MCP |
+| CI 查询 | CI MCP | CI MCP |
+| 数据库查询 | Database MCP | Database MCP |
+| 日志查询 | Log MCP | Log MCP |
+
+### MCP 配置差异
+
+```yaml
+# Claude Code MCP 配置 (~/.claude/settings.json)
+{
+  "mcpServers": {
+    "puppeteer": {
+      "command": "npx", "args": ["-y", "@anthropic-ai/puppeteer-mcp"]
+    }
+  }
+}
+
+# Codex CLI MCP 配置 (~/.codex/mcp.json)
+{
+  "mcpServers": {
+    "playwright": {
+      "command": "npx", "args": ["-y", "@playwright/mcp"]
+    }
+  }
+}
+```
+
+## 平台适配原则
+
+### 文件操作
+- 两个平台都支持直接文件读写，**不需要区分**
+- 优先使用平台原生读写工具（Read/Write/Edit），效率更高
+- 只在原生工具不可用时才 fallback 到 shell 命令
+
+### 命令执行
+- Maven/Gradle 编译命令在两个平台完全一致
+- 测试运行命令完全一致
+- git 命令完全一致
+
+### MCP 工具
+- Claude Code：使用 `skill_mcp` 工具调用 MCP
+- Codex CLI：通过内置 MCP Client 自动调用
+- 如果 MCP 工具不可用，降级为 shell 命令
+
+### 截图验证
+- Claude Code：Puppeteer MCP（`@anthropic-ai/puppeteer-mcp`）
+- Codex CLI：Playwright MCP（`@playwright/mcp`）
+- 功能等价，只是包名不同
+
+## 会话初始化序列
+
+> 完整启动仪式定义在 `agents/owner-agent.md` 第零节。
+> 此处只列出平台相关的步骤。**请勿独立定义一套新的序列。**
+
+```yaml
+1. 执行 owner-agent.md 第零节的 8 步启动仪式（不区分平台）
+2. 加载本文件（platform.md）→ 确定平台工具适配
+3. 读取 AGENTS.md 或 CLAUDE.md（项目根目录）
+4. 读取 .harness/README.md → 理解体系概览
+5. 读取 .harness/rules/ → 加载 L1 约束
+6. 开始工作
+```
+
+## 已知平台差异
+
+| 差异点 | Claude Code | Codex CLI | 应对策略 |
+|--------|-------------|-----------|----------|
+| MCP 配置位置 | `~/.claude/settings.json` | `~/.codex/mcp.json` | 两份配置都生成 |
+| MCP 调用方式 | `skill_mcp` 工具 | MCP Client 自动 | 文档区分 |
+| 文件读写工具 | Read/Write/Edit/Grep/Glob | read/write/edit | 功能等价 |
+| 环境变量 | `CLAUDE_CODE=1` | `CODEX_CLI=1` | 用环境变量检测 |
