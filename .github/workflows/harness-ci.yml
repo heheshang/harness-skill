@@ -1,0 +1,152 @@
+# Harness CI — Automated Quality Gates
+#
+# Triggered on push/PR to main.
+# Runs: init check → quality gates → lint → test → doc validation
+#
+# This is a "reporting mode" workflow: it reports failures without blocking merge.
+# Switch to strict mode by removing the 'continue-on-error: true' lines.
+
+name: Harness CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+env:
+  HARNESS_DIR: .harness
+
+jobs:
+  # ──────────────────────────────────────────────────────────
+  # Job 1: Init + Build Detection
+  # ──────────────────────────────────────────────────────────
+  init:
+    name: Init & Build Detection
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run init.sh (if exists)
+        run: |
+          if [ -f ".harness/scripts/init.sh" ]; then
+            bash .harness/scripts/init.sh
+          else
+            echo "ℹ️  init.sh not found — skipping session init"
+          fi
+        continue-on-error: true
+
+      - name: Verify build detection
+        run: |
+          source .harness/scripts/detect-build.sh
+          echo "Detected build tool: ${BUILD_TOOL}"
+          echo "Build command: ${BUILD_CMD}"
+          echo "Test command: ${TEST_CMD}"
+          echo "Lint command: ${LINT_CMD}"
+
+  # ──────────────────────────────────────────────────────────
+  # Job 2: Quality Gates (on template + example changes)
+  # ──────────────────────────────────────────────────────────
+  quality-gates:
+    name: Quality Gates QG-1~4
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: QG-1 — Requirement Completeness (template)
+        run: |
+          bash .harness/scripts/verify-qg.sh 1 .harness/changes/template || echo "⚠️  QG-1 report mode"
+          # Shell version always writes report; exit code is the gate result
+        continue-on-error: true
+
+      - name: QG-1 — Python verifier (template)
+        run: |
+          python .harness/scripts/verify-qg.py 1 .harness/changes/template || echo "⚠️  QG-1 (py) report mode"
+        continue-on-error: true
+
+      - name: QG-2 — Review Approval (template, no review yet)
+        run: |
+          python .harness/scripts/verify-qg.py 2 .harness/changes/template || echo "⚠️  QG-2 report mode (expected fail — no review file)"
+        continue-on-error: true
+
+      - name: QG-3 — Compilation Check
+        run: |
+          source .harness/scripts/detect-build.sh
+          if [ "${BUILD_TOOL}" != "unknown" ]; then
+            echo "Running: ${BUILD_CHECK_CMD}"
+            ${BUILD_CHECK_CMD}
+          else
+            echo "⚠️  No build tool detected — QG-3 skipped"
+          fi
+        continue-on-error: true
+
+      - name: QG-4 — Unit Test Gate
+        run: |
+          source .harness/scripts/detect-build.sh
+          if [ "${BUILD_TOOL}" != "unknown" ]; then
+            echo "Running: ${TEST_CMD}"
+            ${TEST_CMD} 2>&1 || echo "⚠️  Tests failed (report mode)"
+          else
+            echo "⚠️  No build tool detected — QG-4 skipped"
+          fi
+        continue-on-error: true
+
+  # ──────────────────────────────────────────────────────────
+  # Job 3: Lint + Style
+  # ──────────────────────────────────────────────────────────
+  lint:
+    name: Lint & Style
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: ShellCheck (shell scripts)
+        uses: ludeeus/action-shellcheck@master
+        with:
+          scandir: .harness/scripts/
+        continue-on-error: true
+
+      - name: Python syntax check
+        run: |
+          python3 -m py_compile .harness/scripts/verify-qg.py
+          echo "✅ verify-qg.py syntax OK"
+
+  # ──────────────────────────────────────────────────────────
+  # Job 4: Documentation Validation
+  # ──────────────────────────────────────────────────────────
+  docs:
+    name: Documentation Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify required files exist
+        run: |
+          required=(
+            ".harness/README.md"
+            ".harness/platform.md"
+            ".harness/agents/owner-agent.md"
+            ".harness/rules/quality-gates.md"
+            ".harness/scripts/init.sh"
+            ".harness/scripts/detect-build.sh"
+            ".harness/scripts/verify-qg.sh"
+            ".harness/scripts/verify-qg.py"
+            ".harness/changes/template/spec.md"
+          )
+          all_ok=true
+          for f in "${required[@]}"; do
+            if [ -f "$f" ]; then
+              echo "✅ $f"
+            else
+              echo "❌ MISSING: $f"
+              all_ok=false
+            fi
+          done
+          $all_ok || exit 1
+
+      - name: Markdown link check (harness docs)
+        uses: gaurav-nelson/github-action-markdown-link-check@v1
+        with:
+          use-quiet-mode: 'yes'
+          folder-path: .harness
+        continue-on-error: true
