@@ -18,7 +18,7 @@
 
 ### Step 2：识别变更范围
 1. 确定需求涉及的功能模块
-2. 确定需求涉及的代码层（Controller / Service / Domain / DAO / Adapter）
+2. 确定需求涉及的代码层（Handler / Service / Domain / Repository / Client）
 3. 识别可能受影响的关联模块和链路
 
 ### Step 3：影响分析
@@ -53,11 +53,11 @@
 - {模块名}：{变更内容简述}
 
 ### 涉及的代码层
-- [ ] Controller / REST
+- [ ] Handler
 - [ ] Service
 - [ ] Domain
-- [ ] DAO / Mapper
-- [ ] Adapter / RPC
+- [ ] Repository
+- [ ] Client / RPC
 
 ### 不涉及的模块
 - {模块名}：{原因}

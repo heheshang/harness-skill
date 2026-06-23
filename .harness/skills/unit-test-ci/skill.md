@@ -67,8 +67,7 @@ pipeline:
     - test:
         script: source .harness/scripts/detect-build.sh && ${TEST_CMD}
         reports:
-          - target/surefire-reports/*.xml      # Java
-          - test-results/**/*.xml               # Python/JUnit XML
+          - target/nextest/ci/junit.xml           # Rust (cargo nextest)
         coverage:
           threshold: 80
     - lint:

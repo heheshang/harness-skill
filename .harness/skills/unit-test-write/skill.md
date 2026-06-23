@@ -37,33 +37,38 @@
 ### Step 3：编写测试代码
 按照 Arrange-Act-Assert 三段式结构编写：
 
-```java
-@Test
-public void testGetPrice_ItemExists_ReturnPrice() {
+```rust
+#[tokio::test]
+async fn test_get_price_item_exists_returns_price() {
     // Arrange
-    Long itemId = 12345L;
-    Long expectedPrice = 9990L; // 单位：分
-    when(priceDao.queryByItemId(itemId)).thenReturn(buildMockPrice(itemId, expectedPrice));
+    let item_id = ItemId(12345);
+    let expected_price = Money::from_cents(9990);
+    let mut mock_repo = MockPriceRuleRepository::new();
+    mock_repo.expect_find_active_by_item_id()
+        .return_once(move |_, _| Ok(vec![build_price_row(item_id, expected_price)]));
+    let service = DefaultPriceService::new(Arc::new(mock_repo), Arc::new(MockPriceCache::new()));
 
     // Act
-    Long result = priceService.getPrice(itemId);
+    let result = service.get_price(item_id).await.unwrap();
 
     // Assert
-    assertNotNull(result);
-    assertEquals(expectedPrice, result);
+    assert_eq!(result, Some(expected_price));
 }
 
-@Test
-public void testGetPrice_ItemNotExists_ReturnNull() {
+#[tokio::test]
+async fn test_get_price_item_not_exists_returns_none() {
     // Arrange
-    Long itemId = 99999L;
-    when(priceDao.queryByItemId(itemId)).thenReturn(null);
+    let item_id = ItemId(99999);
+    let mut mock_repo = MockPriceRuleRepository::new();
+    mock_repo.expect_find_active_by_item_id()
+        .return_once(|_, _| Ok(vec![]));
+    let service = DefaultPriceService::new(Arc::new(mock_repo), Arc::new(MockPriceCache::new()));
 
     // Act
-    Long result = priceService.getPrice(itemId);
+    let result = service.get_price(item_id).await.unwrap();
 
     // Assert
-    assertNull(result);
+    assert_eq!(result, None);
 }
 ```
 
@@ -75,12 +80,14 @@ public void testGetPrice_ItemNotExists_ReturnNull() {
 ## 测试规范
 
 ### 测试框架
-- 使用 JUnit 4/5 + Mockito
-- 需要 Spring 容器的测试使用 `@SpringBootTest`
+- 使用 `#[cfg(test)] mod tests` + `#[tokio::test]`
+- Mock 通过 trait object 实现（`MockXxxRepository` 实现对应 trait）
+- 优先使用 `mockall` crate 自动生成 mock
+- 集成测试使用 `sqlx::test` 或 testcontainers
 
 ### 命名规范
 - 类名：`{被测试类名}Test`
-- 方法名：`test{MethodName}_{Scenario}_{ExpectedResult}`
+- 方法名：`test_{function_name}_{scenario}_{expected_result}`
 
 ### 覆盖率要求
 - 新增代码行覆盖率 ≥ 80%

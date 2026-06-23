@@ -14,11 +14,11 @@
 
 | 层级 | 规范文件 | 适用场景 |
 |------|----------|----------|
-| Controller | `controller-spec.md` | 新增/修改 REST 接口 |
-| Service | `service-spec.md` | 新增/修改业务服务 |
-| Domain | `domain-spec.md` | 新增/修改领域模型 |
-| DAO | `dao-spec.md` | 新增/修改数据访问层 |
-| Adapter | `adapter-spec.md` | 新增/修改外部服务调用 |
+| Handler | `rust-handler-spec.md` | 新增/修改 HTTP handler / axum 路由 |
+| Service | `rust-service-spec.md` | 新增/修改业务服务（trait + impl） |
+| Domain | `rust-domain-spec.md` | 新增/修改领域模型（Newtype / Entity） |
+| Repository | `rust-repository-spec.md` | 新增/修改数据访问（sqlx 查询） |
+| Client | `rust-client-spec.md` | 新增/修改外部服务调用（reqwest / gRPC） |
 
 ## 编码前置检查清单
 
@@ -26,7 +26,7 @@
 - [ ] 已阅读 `tasks.md` 了解任务分解
 - [ ] 已加载对应层级的分层编码 Spec
 - [ ] 已读取需修改的现有代码文件
-- [ ] 已确认修改不违反架构规则（`arch-rules.md`）
+- [ ] 已确认修改不违反架构规则（`arch-rules-rust.md`）
 
 ## 通用编码原则
 
