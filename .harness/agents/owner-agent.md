@@ -43,24 +43,24 @@
 
 ### 项目概况
 
-> ⚠️ **示例数据**：以下项目信息（price-center / Java 1.8）是示例占位数据。
+> ⚠️ **示例数据**：以下项目信息是示例占位数据。
 > 实际项目应替换为真实项目概况。构建工具由 `detect-build.sh` 自动检测。
 
-- **项目名称**：price-center（价格中心） — *示例*
-- **技术栈**：Java 1.8 / Spring Boot / LiteFlow / HSF / Diamond / Tair / TDDL — *示例*
-- **代码规模**：10 万+ 行 — *示例*
-- **模块结构**：app(接入层) / web(展现层) / core(核心业务层) / integration(集成层) / common(公共层) — *示例*
-- **核心中间件**：RPC 框架 (HSF)、流程编排引擎 (LiteFlow)、配置中心 (Diamond)、分布式缓存 (Tair/Redis)、数据库中间件 (TDDL/ShardingSphere) — *示例*
+- **项目名称**：my-service（示例服务） — *示例*
+- **技术栈**：Rust 1.85 / axum / sqlx / tokio / tracing — *示例*
+- **代码规模**：Cargo workspace，含 8 个 crate — *示例*
+- **模块结构**：app(启动层) / handlers(接入层) / services(业务层) / domain(领域层) / repository(数据层) / clients(集成层) / common(公共层) — *示例*
+- **核心中间件**：Web 框架 (axum)、数据库驱动 (sqlx)、异步运行时 (tokio)、可观测性 (tracing)、缓存 (redis) — *示例*
 
 ### 核心业务约束
 
 | 约束项 | 规范 | 违规后果 |
 |--------|------|----------|
-| 价格字段 | `long` 类型，单位为分 | 精度丢失导致资损 |
-| 金额计算 | 禁止 `double`/`float` | 浮点数精度问题 |
-| 外部服务调用 | 必须设置超时和降级 | 级联故障 |
-| 时间格式 | 统一 `yyyy-MM-dd HH:mm:ss` | 解析异常 |
-| RPC 接口 | 必须定义 version 和 timeout | 兼容性风险 |
+| 金额字段 | `Money(i64)` Newtype，单位为分 | 精度丢失导致资损 |
+| 金额计算 | 禁止 `f64`/`f32` | 浮点数精度问题 |
+| 外部服务调用 | 必须设置超时和降级（Client trait） | 级联故障 |
+| 错误处理 | 禁止 `unwrap()`/`expect()` | panic 导致服务崩溃 |
+| unsafe 代码 | 必须 `forbid(unsafe_code)` 或有 `// SAFETY:` 注释 | 内存安全风险 |
 
 ## 二、配置中枢索引
 
@@ -68,8 +68,8 @@
 
 | 规则 | 路径 | 职责 | 加载时机 |
 |------|------|------|----------|
-| 架构规则 | `.harness/rules/arch-rules.md` | 工程结构约束、分层架构约定 | 会话初始化 |
-| 编码规范 | `.harness/rules/coding-rules.md` | 编码风格、命名规范、类型约束 | 会话初始化 |
+| 架构规则 | `.harness/rules/arch-rules-rust.md` | 工程结构约束、分层架构约定 | 会话初始化 |
+| 编码规范 | `.harness/rules/coding-rules-rust.md` | 编码风格、命名规范、类型约束 | 会话初始化 |
 | 质量门禁 | `.harness/rules/quality-gates.md` | 可程序化验证的质量检查条件 | 每个阶段门禁检查 |
 | 流程规则 | `.harness/rules/workflow-rules.md` | 10 阶段开发流程的详细流转规则 | 会话初始化 |
 
@@ -210,12 +210,12 @@ human_confirm: "需求评审通过，请确认是否进入编码阶段？"
 
 ```
 entry: 需求评审通过且用户确认
-load: .harness/skills/coding-skill/ (含 8 份分层编码 Spec)
+load: .harness/skills/coding-skill/ (含 7 份 Rust 分层编码 Spec)
 steps:
   1. 基于 spec.md 和 tasks.md 拆解具体编码任务
   2. 按 tasks.md 中定义的优先级顺序实现
   3. 每次变更前先理解现有代码逻辑（读取相关文件）
-  4. 按分层规范实现每一层：Controller → Service → Domain → DAO → Adapter
+  4. 按分层规范实现每一层：Handler → Service → Domain → Repository → Client
   5. 每完成一个子任务，执行编译检查
   6. 涉及国际化的链路做同步修改确认
 output: 变更后的源码文件
@@ -489,7 +489,7 @@ Agent Session 边界
 [ ] diff 中不包含调试代码（print/console.log/TODO）
 [ ] diff 覆盖了 spec.md 中定义的所有变更范围
 [ ] diff 中不包含 spec.md 范围之外的修改
-[ ] 新增代码符合 coding-rules.md 约束
+[ ] 新增代码符合 coding-rules-rust.md 约束
 [ ] 对应测试已通过
 [ ] feature_list.json 中对应特性标记为 done
 ```

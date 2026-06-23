@@ -12,7 +12,7 @@
 ### 1. 编码实现
 - 按 tasks.md 中定义的优先级顺序实现
 - 每次变更前先理解现有代码逻辑（读取相关文件）
-- 按分层规范实现：Controller → Service → Domain → DAO → Adapter
+- 按分层规范实现：Handler → Service → Domain → Repository → Client
 - 每完成一个子任务，执行编译检查
 
 ### 2. 单元测试编写
@@ -53,14 +53,12 @@
 
 | 技能 | 用途 |
 |------|------|
-| coding-skill | 编码实现主流程 |
-| controller-spec | Controller 层规范 |
-| service-spec | Service 层规范 |
-| domain-spec | Domain 层规范 |
-| dao-spec | DAO 层规范 |
-| adapter-spec | Adapter 层规范 |
-| interface-definition-spec | 接口定义规范 |
-| api-doc-spec | 接口文档生成规范 |
+| rust-skill | 编码实现主流程 |
+| rust-handler-spec | Handler 层规范 |
+| rust-service-spec | Service 层规范 |
+| rust-domain-spec | Domain 层规范 |
+| rust-repository-spec | Repository 层规范 |
+| rust-client-spec | Client 层规范 |
 | unit-test-write | 单元测试编写规范 |
 
 ## 与 Owner Agent 的关系
