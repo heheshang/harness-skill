@@ -15,13 +15,13 @@
 - {模块名}：{变更内容简述}
 
 ### 涉及的代码层
-- [ ] Controller / REST
+- [ ] Handler / axum 路由
 - [ ] Service
 - [ ] Domain
-- [ ] DAO / Mapper
-- [ ] Adapter / RPC
+- [ ] Repository / sqlx
+- [ ] Client / RPC
 - [ ] Configuration
-- [ ] Resource Bundle（国际化）
+- [ ] Migrations
 
 ### 不涉及的模块
 - {模块名}：{原因}

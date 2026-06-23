@@ -20,7 +20,7 @@
 ```
 检测方式：
 - 搜索过时的 TODO
-- 搜索与实际参数不符的 Javadoc
+- 搜索与实际参数不符的文档注释
 - 搜索描述和签名不匹配的文档注释
 
 处理方式：
@@ -35,7 +35,7 @@
 ```
 检测方式：
 - IDE 死代码检测
-- mvn dependency:analyze（Java 项目） / pip audit（Python）/ cargo audit（Rust）
+- `cargo udeps`（Rust 项目）
 - 搜索无调用者的 public 方法
 
 处理方式：
@@ -80,7 +80,7 @@
 
 ```
 检测方式：
-- 跨层调用检测（Controller 直接调用 DAO）
+- 跨层调用检测（Handler 直接调用 Repository）
 - 循环依赖
 - 上帝类 / 过长方法（> 250 LOC）
 
