@@ -36,7 +36,7 @@ cp /path/to/harness-skill/AGENTS.md ./
 
 # 2. 检测构建工具
 source .harness/scripts/detect-build.sh
-# 输出示例: 🔧 Build tool: maven
+# 输出示例: 🔧 Build tool: cargo
 
 # 3. 运行会话启动脚本
 bash .harness/scripts/init.sh
@@ -79,7 +79,7 @@ git status --short 2>/dev/null && echo "✅ Git OK" || echo "⚠️  Not a git r
 ### Dry Run 步骤 2：验证 Harness 文件完整性
 
 ```bash
-# 检查 28 个关键文件是否全部存在
+# 检查 31 个关键文件是否全部存在
 required_files=(
   ".harness/README.md"
   ".harness/platform.md"
@@ -90,6 +90,7 @@ required_files=(
   ".harness/agents/evaluator-agent.md"
   ".harness/rules/arch-rules-rust.md"
   ".harness/rules/coding-rules-rust.md"
+  ".harness/rules/linter-examples-rust.md"
   ".harness/rules/quality-gates.md"
   ".harness/rules/workflow-rules.md"
   ".harness/rules/entropy-gc.md"
@@ -102,6 +103,7 @@ required_files=(
   ".harness/changes/template/spec.md"
   ".harness/changes/template/tasks.md"
   ".harness/changes/template/summary.md"
+  ".harness/changes/template/progress.md"
   ".harness/changes/template/feature_list.json"
   ".harness/changes/template/contract.md"
   ".harness/changes/template/design.md"
@@ -147,9 +149,9 @@ cat > "$DRY_RUN_DIR/spec.md" << 'EOF'
 在 PriceService 中新增一个 echo 方法，返回传入的参数。
 
 ## 变更范围
-- 涉及模块：core/service
+- 涉及模块：crates/services
 - 涉及代码层：Service
-- 不涉及模块：app, web, integration, dal
+- 不涉及模块：app, handler, repository, client
 
 ## 影响分析
 | 影响维度 | 分析 | 风险等级 |
@@ -209,8 +211,8 @@ echo "✅ Dry Run 变更目录已创建: $DRY_RUN_DIR"
 阶段 3 — 编码实现:
   操作:
     1. 让 Generator Agent 按 spec 实现 echo 方法
-    2. 在 PriceService 接口中新增方法签名
-    3. 在 PriceServiceImpl 中实现方法体
+    2. 在 PriceService trait 中新增方法签名
+    3. 在 DefaultPriceService 中实现方法体
     4. 编译检查:
        bash .harness/scripts/verify-qg.sh 3 .harness/changes/dry-run-initial-setup-$(date +%Y%m%d)
   预期:
@@ -326,11 +328,11 @@ cp -r .harness/changes/template .harness/changes/feat-add-cache-20260622
 ### 涉及的模块
 - {模块名}：{变更简述}
 ### 涉及的代码层
-- [ ] Controller / REST
+- [ ] Handler / axum 路由
 - [ ] Service
 - [ ] Domain
-- [ ] DAO / Mapper
-- [ ] Adapter / RPC
+- [ ] Repository / sqlx
+- [ ] Client / RPC
 ### 不涉及的模块
 - {模块名}：{原因}
 
@@ -463,19 +465,23 @@ Agent 生成 `review-v2.md`，包含 MUST FIX / LOW / INFO + 评分表。
 
 **测试结构**（Arrange-Act-Assert）：
 
-```java
-@Test
-public void testGetPrice_ItemExists_ReturnPrice() {
+```rust
+#[tokio::test]
+async fn test_get_price_item_exists_return_price() {
     // Arrange（准备数据）
-    Long itemId = 12345L;
-    when(priceDao.queryByItemId(itemId)).thenReturn(buildMockPrice(itemId, 9990L));
+    let item_id = ItemId(12345);
+    let mut repo = MockPriceRepository::new();
+    repo.expect_find_by_item_id()
+        .with(eq(item_id))
+        .return_once(|_| Ok(Some(build_mock_price(item_id, 9990))));
+
+    let service = DefaultPriceService::new(Arc::new(repo));
 
     // Act（执行操作）
-    Long result = priceService.getPrice(itemId);
+    let result = service.get_price(item_id).await.unwrap();
 
     // Assert（验证结果）
-    assertNotNull(result);
-    assertEquals(Long.valueOf(9990L), result);
+    assert_eq!(result, Price(Money(9990)));
 }
 ```
 
@@ -504,9 +510,9 @@ bash .harness/scripts/verify-qg.sh 4 .harness/changes/feat-add-cache-20260622
 git add {变更文件}
 git commit -m "feat: add cache layer for price query
 
-- PriceService: 新增 getPriceWithCache 方法
-- PriceServiceImpl: 实现二级缓存逻辑
-- PriceServiceTest: 新增 12 个测试用例"
+- PriceService: 新增 get_price_with_cache 方法
+- DefaultPriceService: 实现二级缓存逻辑
+- price_service_test: 新增 12 个测试用例"
 
 # 推送到远程触发 CI
 git push
@@ -563,9 +569,9 @@ CI 通过后 → 创建 PR → Agent 自审 → Review → Merge。
 ## 变更文件清单
 | 文件路径 | 变更类型 | 说明 |
 |----------|----------|------|
-| core/service/PriceService.java | 修改 | 新增 getPriceWithCache 方法 |
-| core/service/impl/PriceServiceImpl.java | 修改 | 实现二级缓存逻辑 |
-| core/service/PriceServiceTest.java | 新增 | 12 个测试用例 |
+| crates/services/src/price_service.rs | 修改 | 新增 get_price_with_cache 方法 |
+| crates/services/src/default_price_service.rs | 修改 | 实现二级缓存逻辑 |
+| crates/services/tests/price_service_test.rs | 新增 | 12 个测试用例 |
 
 ## CI 信息
 - 测试用例数：12 / 通过：12 / 失败：0

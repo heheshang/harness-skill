@@ -95,9 +95,9 @@ cat > "$DRY_RUN_DIR/spec.md" << 'EOF'
 在 PriceService 中新增一个 echo 方法，返回传入的参数。
 
 ## 变更范围
-- 涉及模块：core/service
+- 涉及模块：crates/services
 - 涉及代码层：Service
-- 不涉及模块：app, web, integration, dal
+- 不涉及模块：app, handler, repository, client
 
 ## 影响分析
 无实际影响（这是一个虚拟需求）

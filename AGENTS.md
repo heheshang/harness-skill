@@ -58,4 +58,4 @@
 | 执行熵清理 | `.harness/rules/entropy-gc.md` |
 | 添加架构规则 | `.harness/rules/arch-rules-rust.md` |
 | 添加编码规范 | `.harness/rules/coding-rules-rust.md` |
-| OpenCode 配置 | `opencode.jsonc` + `.opencode/` |
+| OpenCode 配置 | `.opencode/` |

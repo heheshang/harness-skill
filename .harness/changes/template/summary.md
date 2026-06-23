@@ -36,10 +36,10 @@
 
 | 文件路径 | 变更类型 | 说明 |
 |----------|----------|------|
-| {src/main/java/.../XxxService.java} | {新增/修改/删除} | {变更说明} |
-| {src/main/java/.../XxxServiceImpl.java} | {新增/修改/删除} | {变更说明} |
-| {src/test/java/.../XxxServiceTest.java} | {新增/修改/删除} | {变更说明} |
-| {src/main/resources/.../mapper/XxxMapper.xml} | {新增/修改/删除} | {变更说明} |
+| {crates/my-service/src/services/xxx_service.rs} | {新增/修改/删除} | {变更说明} |
+| {crates/my-service/src/services/default_xxx_service.rs} | {新增/修改/删除} | {变更说明} |
+| {crates/my-service/tests/xxx_service_test.rs} | {新增/修改/删除} | {变更说明} |
+| {crates/my-service/src/repositories/xxx_repository.rs} | {新增/修改/删除} | {变更说明} |
 
 ## CI 信息
 

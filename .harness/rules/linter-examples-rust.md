@@ -132,7 +132,7 @@ cargo deny check bans
 //   my-service-repository = { path = "../repository" }  // 跨层！
 
 // crates/handlers/src/price.rs
-use my_service_repository::PriceRepository;  // handler 直接访问 DAO
+use my_service_repository::PriceRepository;  // handler 直接访问 Repository
 
 async fn get_price(
     State(state): State<AppState>,

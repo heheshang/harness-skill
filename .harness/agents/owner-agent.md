@@ -486,7 +486,7 @@ Agent Session 边界
 ### Agent 自审清单（PR 创建前）
 
 ```
-[ ] diff 中不包含调试代码（print/console.log/TODO）
+[ ] diff 中不包含调试代码（println!/eprintln!/dbg!/TODO）
 [ ] diff 覆盖了 spec.md 中定义的所有变更范围
 [ ] diff 中不包含 spec.md 范围之外的修改
 [ ] 新增代码符合 coding-rules-rust.md 约束

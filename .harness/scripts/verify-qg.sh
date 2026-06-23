@@ -1,7 +1,7 @@
 #!/bin/bash
 # Quality Gate Verification Scripts
 # 用法: ./verify-qg.sh <gate-number> <change-dir>
-# 示例: ./verify-qg.sh 1 .harness/changes/feat-price-filter-20240101
+# 示例: ./verify-qg.sh 1 .harness/changes/feat-add-cache-20260622
 
 set -e
 

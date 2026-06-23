@@ -34,7 +34,8 @@
 │   ├── coding-rules-rust.md     # 编码规范
 │   ├── quality-gates.md         # 8 个可程序化验证的质量门禁
 │   ├── workflow-rules.md        # 流程规则（非阶段定义）
-│   └── entropy-gc.md            # 熵清理流程（后台偏差扫描）
+│   ├── entropy-gc.md            # 熵清理流程（后台偏差扫描）
+│   └── linter-examples-rust.md  # 10 条机械执行 Lint 规则（LINT-001~010）
 ├── skills/
 │   ├── request-analysis/        # 需求分析 SOP
 │   ├── coding-skill/            # 编码实现（含 7 份 Rust 分层 Spec）
@@ -47,8 +48,7 @@
 │   ├── verify-qg.sh             # 门禁 Shell 验证脚本
 │   └── verify-qg.py             # 门禁 Python 验证脚本
 ├── changes/
-│   ├── template/                # 变更目录模板
-│   └── feat-price-filter-*/     # 示例变更
+│   └── template/                # 变更目录模板
 └── mcp/mcp-config.md            # MCP 工具集成
 ```
 
