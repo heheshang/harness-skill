@@ -88,12 +88,11 @@ required_files=(
   ".harness/agents/planner-agent.md"
   ".harness/agents/generator-agent.md"
   ".harness/agents/evaluator-agent.md"
-  ".harness/rules/arch-rules.md"
-  ".harness/rules/coding-rules.md"
+  ".harness/rules/arch-rules-rust.md"
+  ".harness/rules/coding-rules-rust.md"
   ".harness/rules/quality-gates.md"
   ".harness/rules/workflow-rules.md"
   ".harness/rules/entropy-gc.md"
-  ".harness/rules/linter-examples.md"
   ".harness/skills/request-analysis/skill.md"
   ".harness/skills/coding-skill/skill.md"
   ".harness/skills/expert-reviewer/skill.md"
@@ -400,22 +399,22 @@ Agent 生成评审报告 `review-v1.md`，包含：
 - [ ] 已理解 spec.md 中的全部需求
 - [ ] 已阅读 tasks.md 了解任务分解
 - [ ] 已读取需修改的现有代码
-- [ ] 已确认不违反架构规则（`arch-rules.md`）
+- [ ] 已确认不违反架构规则（`arch-rules-rust.md`）
 
-**按分层规范编码**（以 Java 为例）：
+**按分层规范编码**（以 Rust 为例）：
 
 ```
-Controller → Service → Domain → DAO → Adapter
+Handler → Service → Domain → Repository → Client
 ```
 
 每层的具体规范参见 `.harness/skills/coding-skill/` 下的分层 Spec。
 
-**编码规则**（自动加载 `coding-rules.md`）：
-- 价格字段用 `long`（分），禁止 `double`
-- 方法体 ≤ 80 行，参数 ≤ 4 个
-- 所有外部 RPC 调用必须有超时和降级
-- 关键路径必须有日志
-- 禁止 catch 后吞掉异常
+**编码规则**（自动加载 `coding-rules-rust.md`）：
+- 金额字段用 `Money(i64)`（分），禁止 `f64`
+- 函数体 ≤ 80 行，参数 ≤ 4 个
+- 所有外部调用必须有超时和降级（通过 Client trait）
+- 关键路径必须有 `#[tracing::instrument]` 和结构化日志
+- 禁止 `unwrap()` / `expect()` — 使用 `?` 传播
 
 **编译检查**：每完成一个子任务立即编译：
 
@@ -628,15 +627,14 @@ CI 通过后 → 创建 PR → Agent 自审 → Review → Merge。
 │   ├── evaluator-agent.md # 评判 Agent
 │   └── initializer-agent.md # 初始化 Agent
 ├── rules/                 # 规则体系
-│   ├── arch-rules.md      # 架构规则
-│   ├── coding-rules.md    # 编码规范
+│   ├── arch-rules-rust.md  # 架构规则
+│   ├── coding-rules-rust.md # 编码规范
 │   ├── quality-gates.md   # 8 个质量门禁
 │   ├── workflow-rules.md  # 流程规则
-│   ├── entropy-gc.md      # 熵清理
-│   └── linter-examples.md # 自定义 Lint
+│   └── entropy-gc.md      # 熵清理
 ├── skills/                # 技能体系
 │   ├── request-analysis/  # 需求分析 SOP
-│   ├── coding-skill/      # 编码实现（含 8 份分层 Spec）
+│   ├── coding-skill/      # 编码实现（含 7 份 Rust 分层 Spec）
 │   ├── expert-reviewer/   # 评审方法
 │   ├── unit-test-write/   # 测试编写
 │   ├── unit-test-ci/      # CI 验证

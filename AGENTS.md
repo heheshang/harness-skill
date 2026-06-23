@@ -56,7 +56,6 @@
 | 首次初始化环境 | `.harness/agents/initializer-agent.md` |
 | 查看冲刺合同 | `.harness/changes/{current}/contract.md` |
 | 执行熵清理 | `.harness/rules/entropy-gc.md` |
-| 添加架构规则 | `.harness/rules/arch-rules.md` |
-| 添加编码规范 | `.harness/rules/coding-rules.md` |
-| 添加自定义 Lint 规则 | `.harness/rules/linter-examples.md` |
+| 添加架构规则 | `.harness/rules/arch-rules-rust.md` |
+| 添加编码规范 | `.harness/rules/coding-rules-rust.md` |
 | OpenCode 配置 | `opencode.jsonc` + `.opencode/` |

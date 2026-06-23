@@ -30,15 +30,14 @@
 │   ├── generator-agent.md       # 执行 Agent（编码 + 测试）
 │   └── evaluator-agent.md       # 评判 Agent（评审 + 质量门禁）
 ├── rules/
-│   ├── arch-rules.md            # 架构规则与约束
-│   ├── coding-rules.md          # 编码规范
+│   ├── arch-rules-rust.md       # 架构规则与约束
+│   ├── coding-rules-rust.md     # 编码规范
 │   ├── quality-gates.md         # 8 个可程序化验证的质量门禁
 │   ├── workflow-rules.md        # 流程规则（非阶段定义）
-│   ├── entropy-gc.md            # 熵清理流程（后台偏差扫描）
-│   └── linter-examples.md       # 自定义 Lint 规则示例
+│   └── entropy-gc.md            # 熵清理流程（后台偏差扫描）
 ├── skills/
 │   ├── request-analysis/        # 需求分析 SOP
-│   ├── coding-skill/            # 编码实现（含 7 份分层 Spec）
+│   ├── coding-skill/            # 编码实现（含 7 份 Rust 分层 Spec）
 │   ├── expert-reviewer/         # 评审方法 + 报告模板
 │   ├── unit-test-write/         # 改动驱动测试
 │   ├── unit-test-ci/            # CI 流水线验证
@@ -62,8 +61,8 @@
 | 文件 | 行数 | 说明 |
 |------|------|------|
 | `.harness/agents/owner-agent.md` | ~550 行 | 编排中枢 + 会话启动仪式 + PR 工作流 |
-| `.harness/rules/arch-rules.md` | ~100 行 | 架构约束 |
-| `.harness/rules/coding-rules.md` | ~100 行 | 编码规范 |
+| `.harness/rules/arch-rules-rust.md` | ~250 行 | 架构约束 |
+| `.harness/rules/coding-rules-rust.md` | ~210 行 | 编码规范 |
 | `.harness/rules/workflow-rules.md` | ~100 行 | 流程规则 |
 
 **总 Token 预算**：~3,000（~10% 上下文窗口）
