@@ -127,3 +127,68 @@
 | in-progress | 进行中 | 继续当前操作 |
 | blocked | 阻塞中 | 解析阻塞原因 |
 | completed | 已完成 | 进入下一阶段或归档 |
+
+## Rust 领域类型模型
+
+> 应用代码的核心领域类型。Agent 在编码时必须使用这些类型，禁止用裸类型（`i64`、`String`）替代。
+
+### Newtype ID 类型
+
+| 类型 | 内部表示 | 用途 | 示例 |
+|------|----------|------|------|
+| `UserId(uuid::Uuid)` | Uuid v7 | 用户唯一标识 | `UserId::new()` |
+| `PriceId(i64)` | i64 | 价格规则标识 | `PriceId(12345)` |
+| `OrderId(uuid::Uuid)` | Uuid v7 | 订单标识 | `OrderId::new()` |
+| `ItemId(i64)` | i64 | 商品标识 | `ItemId(67890)` |
+
+### 值对象类型
+
+| 类型 | 内部表示 | 约束 | 说明 |
+|------|----------|------|------|
+| `Money` | `i64`（分） | 非负 | 金额，禁止 `f64`。支持 `+`、`-`、`*`（标量乘法） |
+| `Percent` | `u32`（万分比） | 0-10000 | 百分比，0 = 0%，10000 = 100% |
+| `Quantity` | `u32` | 正整数 | 数量 |
+| `Timestamp` | `chrono::NaiveDateTime` | UTC | 数据库时间戳 |
+| `Email` | `String` | 验证格式 | 邮箱地址值对象 |
+
+### 领域枚举
+
+| 枚举 | 变体 | 说明 |
+|------|------|------|
+| `PriceRuleType` | `Fixed` / `Percentage` / `Tiered` | 价格规则类型 |
+| `OrderStatus` | `Pending` / `Confirmed` / `Paid` / `Shipped` / `Delivered` / `Cancelled` | 订单状态（状态机） |
+| `PaymentMethod` | `CreditCard` / `Alipay` / `WechatPay` / `BankTransfer` | 支付方式 |
+
+### 仓储 trait 接口
+
+```rust
+// 定义在 domain crate，实现在 repository crate
+pub trait PriceRepository: Send + Sync {
+    async fn find_by_id(&self, id: &PriceId) -> Result<Option<Price>, RepoError>;
+    async fn find_by_item_id(&self, item_id: &ItemId) -> Result<Vec<Price>, RepoError>;
+    async fn save(&self, price: &Price) -> Result<PriceId, RepoError>;
+    async fn delete(&self, id: &PriceId) -> Result<(), RepoError>;
+}
+```
+
+### 错误类型层次
+
+```
+AppError (common crate, impl IntoResponse)
+├── ServiceError (services crate)
+│   ├── NotFound
+│   ├── ValidationFailed
+│   └── UpstreamError
+├── RepoError (repository crate)
+│   ├── RowNotFound
+│   ├── DuplicateKey
+│   └── DbError
+└── ClientError (clients crate)
+    ├── Timeout
+    ├── ConnectionFailed
+    └── StatusError
+```
+
+- 每层错误使用 `thiserror` 派生
+- 通过 `From` trait 自动转换
+- `AppError` 实现 `IntoResponse`，映射到 HTTP 状态码

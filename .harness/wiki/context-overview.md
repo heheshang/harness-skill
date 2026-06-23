@@ -19,6 +19,23 @@
 - **Agent 原生**：所有模板和流程专为 AI Agent 阅读理解设计
 - **平台无关**：支持 OpenCode / Claude Code / Codex CLI / Cursor 四种平台
 
+## 技术栈配置
+
+本 Harness 实例已配置为 **Rust 项目**专用。技术栈：
+
+| 层 | 技术选型 | 说明 |
+|----|----------|------|
+| Web 框架 | axum 0.8 | 异步 HTTP，Tower 中间件生态 |
+| 数据库 | sqlx 0.8 (PostgreSQL) | 编译期 SQL 检查，`.sqlx/` 离线缓存 |
+| 异步运行时 | tokio 1 | 统一运行时，禁止混用 |
+| 序列化 | serde + serde_json | `#[derive(Serialize, Deserialize)]` |
+| 错误处理 | thiserror（库）+ anyhow（应用） | `#[non_exhaustive]` 错误枚举 |
+| 可观测性 | tracing + tracing-subscriber | 结构化日志，`#[tracing::instrument]` |
+| 校验 | validator 0.19 | `#[derive(Validate)]` |
+| 配置 | figment | Toml + Env 优先级 |
+| 时间 | chrono | `NaiveDateTime`（DB）/ `DateTime<Utc>`（API） |
+| ID | uuid v7 | 时间有序 UUID |
+
 ## 系统架构
 
 ```
@@ -41,6 +58,19 @@ Agent (OC/Claude/Codex)
     ├── .harness/wiki/            ← 业务知识库（本文档）
     ├── .harness/changes/template/ ← 变更模板集
     ├── .harness/rules/           ← 架构/编码/自定义规则
+    │   ├── arch-rules-rust.md       ← Rust 架构规则
+    │   ├── coding-rules-rust.md     ← Rust 编码规范
+    │   ├── linter-examples-rust.md  ← 可机械执行的 Lint 规则
+    │   ├── quality-gates.md         ← 8 个质量门禁
+    │   ├── workflow-rules.md        ← 流程规则
+    │   └── entropy-gc.md            ← 熵清理
+    ├── .harness/skills/coding-skill/  ← Rust 分层编码规范
+    │   ├── rust-skill.md             ← Rust 编码主流程
+    │   ├── rust-domain-spec.md       ← Domain 层
+    │   ├── rust-service-spec.md      ← Service 层
+    │   ├── rust-handler-spec.md      ← Handler 层
+    │   ├── rust-repository-spec.md   ← Repository 层
+    │   └── rust-client-spec.md       ← Client 层
     ├── .harness/mcp/             ← MCP 配置中心
     └── .github/workflows/        ← CI 集成
 ```
