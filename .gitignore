@@ -1,0 +1,14 @@
+# IDE
+.idea/
+*.iml
+.vscode/
+
+# OpenCode runtime
+.omo/
+
+# Rust build artifacts
+target/
+
+# OS files
+.DS_Store
+Thumbnails.db
